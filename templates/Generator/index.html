@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    {% if last_schedules %}
+    <ul>
+    {% for schedule in last_schedules %}
+    <li><a href='{% url 'Generator:detail' schedule.id %}'>{{ schedule.name  }} created: ({{ schedule.user }})</a></li>
+    {% endfor %}
+
+    </ul>
+    {% endif %}
+
+</body>
+</html>

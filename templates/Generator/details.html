@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <form action="{% url 'Generator:events' schedule.id %}" method="post">
+        {% csrf_token %}
+        <fieldset>
+            <legend><h1>{{ schedule.name }}</h1></legend>
+            {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+            {% for events in schedule.event_set.all %}
+                <ul>
+                <li>{{ events }}:<br/>
+                    {{ events.time_slots }}
+                </li>
+                </ul>
+        {% endfor %}
+            <label for="event_name">new event name: </label><input type="text" name="event_name" id="event_name"><br>
+
+            <label for="event_time_slot">new event time slot: </label><input type="text" name="event_time_slot" id="event_time_slot"><br>
+        </fieldset>
+        <input type="submit" value="print">
+        </form>
+</body>
+</html>
