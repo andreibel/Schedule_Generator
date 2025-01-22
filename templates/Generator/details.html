@@ -1,27 +1,187 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+  <meta charset="UTF-8">
+  <title>{{ schedule.name }} - Multiple Events</title>
+  <style>
+    .event-block {
+      border: 1px solid #ccc;
+      margin: 1em;
+      padding: 1em;
+      max-width: 300px;
+      position: relative;
+    }
+    .time-slot-row, .time-slot-group {
+      margin-left: 1em;
+      margin-bottom: 0.5em;
+    }
+    .time-slot-group {
+      border: 1px dashed #aaa;
+      padding: 0.5em;
+    }
+    #events-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: space-around;
+    }
+    /* Style for the Remove Event button */
+    .remove-event-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: #ff6666;
+      color: white;
+      border: none;
+      cursor: pointer;
+      padding: 2px 5px;
+      font-size: 0.8em;
+    }
+  </style>
 </head>
 <body>
-    <form action="{% url 'Generator:events' schedule.id %}" method="post">
-        {% csrf_token %}
-        <fieldset>
-            <legend><h1>{{ schedule.name }}</h1></legend>
-            {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-            {% for events in schedule.event_set.all %}
-                <ul>
-                <li>{{ events }}:<br/>
-                    {{ events.time_slots }}
-                </li>
-                </ul>
-        {% endfor %}
-            <label for="event_name">new event name: </label><input type="text" name="event_name" id="event_name"><br>
+  <h1>Schedule: {{ schedule.name }}</h1>
 
-            <label for="event_time_slot">new event time slot: </label><input type="text" name="event_time_slot" id="event_time_slot"><br>
-        </fieldset>
-        <input type="submit" value="print">
-        </form>
+  <!-- Display existing events (if any) -->
+  {% for event in schedule.event_set.all %}
+    <ul>
+      <li>{{ event }}:<br/> {{ event.time_slots }}</li>
+    </ul>
+  {% endfor %}
+
+  <!-- Form to add new events -->
+  <form action="{% url 'Generator:events' schedule.id %}" method="POST">
+    {% csrf_token %}
+    <!-- Container for event blocks inserted via JavaScript -->
+    <div id="events-container"></div>
+    <!-- Button to add a new event block -->
+    <button type="button" id="addEventButton">Add New Event</button>
+    <br><br>
+    <input type="submit" value="Save All Events">
+  </form>
+
+  <script>
+    // Global event counter.
+    let eventIndex = 0;
+    const addEventButton = document.getElementById('addEventButton');
+    const eventsContainer = document.getElementById('events-container');
+
+    addEventButton.addEventListener('click', () => {
+      const currentEventIndex = eventIndex;
+      // Create a new event block container.
+      const eventDiv = document.createElement('div');
+      eventDiv.classList.add('event-block');
+
+      // Build the event block HTML.
+      eventDiv.innerHTML = `
+        <button type="button" class="remove-event-btn">X</button>
+        <h2>New Event #${currentEventIndex + 1}</h2>
+        <label>Event Name:</label>
+        <input type="text" name="event_${currentEventIndex}_name" placeholder="e.g. My Event"><br><br>
+        <label>Time Slot Mode:</label>
+        <label>
+          <input type="radio" name="event_${currentEventIndex}_mode" value="single" checked> Single
+        </label>
+        <label>
+          <input type="radio" name="event_${currentEventIndex}_mode" value="split"> Split (2 parts)
+        </label>
+        <br><br>
+        <!-- Container for time slots for this event -->
+        <div id="time-slots-${currentEventIndex}"></div>
+        <button type="button" class="addTimeSlotBtn">Add Time Slot Group</button>
+        <hr>
+      `;
+
+      // Add Remove Event button functionality.
+      eventDiv.querySelector('.remove-event-btn').addEventListener('click', () => {
+        eventDiv.remove();
+      });
+
+      // Get reference to the time slot container and initialize local counter.
+      const timeSlotsContainer = eventDiv.querySelector(`#time-slots-${currentEventIndex}`);
+      let timeSlotIndex = 0;
+
+      // When the mode is changed, clear time slots.
+      const modeRadios = eventDiv.querySelectorAll(`input[name="event_${currentEventIndex}_mode"]`);
+      modeRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+          timeSlotsContainer.innerHTML = '';
+          timeSlotIndex = 0;
+        });
+      });
+
+      // When "Add Time Slot Group" is clicked.
+      eventDiv.querySelector('.addTimeSlotBtn').addEventListener('click', () => {
+        // Get the current mode.
+        const mode = eventDiv.querySelector(`input[name="event_${currentEventIndex}_mode"]:checked`).value;
+        let groupHTML = '';
+        if (mode === 'split') {
+          // In split mode, add a group with two rows.
+          groupHTML = `
+            <div class="time-slot-group">
+              <div class="time-slot-row">
+                <label>Part 1 - Day:</label>
+                <select name="event_${currentEventIndex}_slot_${timeSlotIndex}_first_day">
+                  <option value="Sun">Sun</option>
+                  <option value="Mon">Mon</option>
+                  <option value="Tue">Tue</option>
+                  <option value="Wed">Wed</option>
+                  <option value="Thu">Thu</option>
+                  <option value="Fri">Fri</option>
+                  <option value="Sat">Sat</option>
+                </select>
+                <label>From:</label>
+                <input type="time" name="event_${currentEventIndex}_slot_${timeSlotIndex}_first_start">
+                <label>To:</label>
+                <input type="time" name="event_${currentEventIndex}_slot_${timeSlotIndex}_first_end">
+              </div>
+              <div class="time-slot-row">
+                <label>Part 2 - Day:</label>
+                <select name="event_${currentEventIndex}_slot_${timeSlotIndex}_second_day">
+                  <option value="Sun">Sun</option>
+                  <option value="Mon">Mon</option>
+                  <option value="Tue">Tue</option>
+                  <option value="Wed">Wed</option>
+                  <option value="Thu">Thu</option>
+                  <option value="Fri">Fri</option>
+                  <option value="Sat">Sat</option>
+                </select>
+                <label>From:</label>
+                <input type="time" name="event_${currentEventIndex}_slot_${timeSlotIndex}_second_start">
+                <label>To:</label>
+                <input type="time" name="event_${currentEventIndex}_slot_${timeSlotIndex}_second_end">
+              </div>
+            </div>
+          `;
+        } else {
+          // Single mode: add a single row.
+          groupHTML = `
+            <div class="time-slot-row">
+              <label>Day:</label>
+              <select name="event_${currentEventIndex}_slot_${timeSlotIndex}_day">
+                <option value="Sun">Sun</option>
+                <option value="Mon">Mon</option>
+                <option value="Tue">Tue</option>
+                <option value="Wed">Wed</option>
+                <option value="Thu">Thu</option>
+                <option value="Fri">Fri</option>
+                <option value="Sat">Sat</option>
+              </select>
+              <label>From:</label>
+              <input type="time" name="event_${currentEventIndex}_slot_${timeSlotIndex}_start">
+              <label>To:</label>
+              <input type="time" name="event_${currentEventIndex}_slot_${timeSlotIndex}_end">
+            </div>
+          `;
+        }
+        timeSlotsContainer.insertAdjacentHTML('beforeend', groupHTML);
+        timeSlotIndex++;
+      });
+
+      // Append the event block and increment the global counter.
+      eventsContainer.appendChild(eventDiv);
+      eventIndex++;
+    });
+  </script>
 </body>
 </html>

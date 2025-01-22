@@ -3,7 +3,7 @@ from . import views
 
 app_name = "Generator"
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('<int:request_id>/', views.detail, name='detail'),
-    path('<int:request_id>/events/', views.events, name='events'),
+    path('', views.IndexView.as_view(), name='index'),
+    path('<int:schedule_id>/', views.detail, name='detail'),
+    path('<int:schedule_id>/events/', views.events, name='events'),
 ]
