@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.views.generic import DetailView
@@ -5,90 +6,24 @@ import json
 from .models import Schedule, Event
 from django.views import generic
 from django.core.exceptions import ValidationError
-
-class IndexView(generic.ListView):
+from django.contrib.auth.mixins import LoginRequiredMixin
+class IndexView(LoginRequiredMixin, generic.ListView):
     template_name = 'Generator/index.html'
     context_object_name = 'last_schedules'
+    login_url = '/accounts/login/'
 
     def get_queryset(self):
-        return Schedule.objects.order_by('-created_at')[:5]
-class Detail_SchedualsView(generic.DetailView):
+        return Schedule.objects.filter(user=self.request.user)
+
+class Detail_SchedualsView(LoginRequiredMixin, generic.DetailView):
     template_name = 'Generator/details.html'
     context_object_name = 'schedule'
     pk_url_kwarg = 'request_id'
+@login_required(login_url='/accounts/login/')
 def detail(request,schedule_id):
     schedule = get_object_or_404(Schedule, pk=schedule_id)
     return render(request,'Generator/details.html', {'schedule':schedule})
-#
-#
-# def events(request, schedule_id):
-#     schedule = get_object_or_404(Schedule, pk=schedule_id)
-#
-#     if request.method == 'POST':
-#         # Initialize a dictionary to collect data for all events
-#         event_data = {}
-#
-#         # Step 1: Parse the POST data to build event_data
-#         for key, value in request.POST.items():
-#             print(key, value)
-#             if not key.startswith("event_"):
-#                 continue
-#             parts = key.split("_")
-#             if len(parts) < 3:
-#                 continue
-#
-#             event_index = parts[1]  # e.g., "0", "1", "2"
-#             field_type = parts[2]   # e.g., "name" or "slot"
-#
-#             if event_index not in event_data:
-#                 event_data[event_index] = {"name": "", "slots": []}
-#
-#             if field_type == "name":
-#                 event_data[event_index]["name"] = value.strip()
-#             elif field_type == "slot" and len(parts) == 5:
-#                 # e.g., event_0_slot_1_day
-#                 slot_index = parts[3]  # e.g., "1"
-#                 slot_field = parts[4]  # e.g., "day", "start", "end"
-#
-#                 # Ensure the slot index exists
-#                 while len(event_data[event_index]["slots"]) <= int(slot_index):
-#                     event_data[event_index]["slots"].append({"day": "", "start": "", "end": ""})
-#                 event_data[event_index]["slots"][int(slot_index)][slot_field] = value.strip()
-#         print(event_data)
-#         # Step 2: Iterate through all parsed events and save them
-#         created_count = 0
-#         for e_index, e_info in event_data.items():
-#             name = e_info["name"]
-#             slots = e_info["slots"]
-#
-#             # Build a list of formatted time slots
-#             time_slot_list = []
-#             for slot in slots:
-#                 day = slot.get("day")
-#                 start = slot.get("start")
-#                 end = slot.get("end")
-#                 if day and start and end:
-#                     time_slot_list.append(f"{day} {start}-{end}")
-#
-#             # Skip if no name or no valid time slots
-#             if not name or not time_slot_list:
-#                 continue
-#
-#             # Create and save the event
-#             try:
-#
-#                 new_event = Event(schedule=schedule, name=name, time_slots=time_slot_list)
-#                 new_event.full_clean()  # Validate the event
-#                 new_event.save()
-#                 created_count += 1
-#             except ValidationError as ve:
-#                 # Log or display validation errors (optional)
-#                 print(f"Validation error for event '{name}': {ve}")
-#
-#         return HttpResponse(f"Saved {created_count} new event(s) for schedule '{schedule.name}'.")
-#
-#     return HttpResponse("Please use POST to submit new events.")
-
+@login_required(login_url='/accounts/login/')
 def events(request, schedule_id):
     schedule = get_object_or_404(Schedule, pk=schedule_id)
     if request.method != 'POST':

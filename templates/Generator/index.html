@@ -1,21 +1,60 @@
+<!-- generator/templates/generator/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Generator App Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+        h1 { color: #333; }
+        a {
+            color: #4CAF50;
+            text-decoration: none;
+            padding: 10px 15px;
+            background-color: #e7e7e7;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        a:hover {
+            background-color: #d4d4d4;
+        }
+        .schedule-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .schedule-item {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .schedule-item h2 {
+            margin-top: 0;
+        }
+    </style>
 </head>
 <body>
-    {% if last_schedules %}
-    <ul>
-    {% for schedule in last_schedules %}
-    <li><a href='{% url 'Generator:detail' schedule.id %}'>{{ schedule.name  }} created: ({{ schedule.user }})</a></li>
-    {% endfor %}
+    <h1>Welcome, {{ request.user.username }}!</h1>
+    <p>This is the Generator app's index page.</p>
+    <a href="{% url 'accounts:logout' %}">Log Out</a>
 
-    </ul>
+    <h2>Your Schedules</h2>
+    {% if schedules.exists %}
+        <ul class="schedule-list">
+            {% for schedule in schedules %}
+                <li class="schedule-item">
+                    <h2>{{ schedule.name }}</h2>
+                    <p>Created at: {{ schedule.created_at }}</p>
+                    <!-- Optionally, list events or add links to view/edit the schedule -->
+                    <a href="{% url 'Generator:detail' schedule.id %}">Manage Events</a>
+                </li>
+            {% endfor %}
+        </ul>
     {% endif %}
-
 </body>
 </html>
-
-
-
