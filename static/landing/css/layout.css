@@ -1,0 +1,38 @@
+/* static/css/layout.css */
+
+/* Grid System (Optional) */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -0.5em;
+}
+
+.col {
+    flex: 1;
+    padding: 0 0.5em;
+    min-width: 200px;
+}
+
+/* Section Spacing */
+.section {
+    padding: 2em 0;
+}
+
+/* Header and Footer */
+.header {
+    background-color: var(--color-secondary);
+    color: var(--text-light);
+    padding: 1em 0;
+    text-align: center;
+}
+
+.footer {
+    background-color: var(--color-secondary);
+    color: var(--text-light);
+    padding: 1em 0;
+    text-align: center;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
+

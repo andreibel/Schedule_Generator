@@ -1,0 +1,84 @@
+/* static/css/navbar.css */
+
+/* Navigation Bar Styles */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--color-secondary);
+    padding: 0.5em 1em;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar-logo a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.navbar-links {
+    list-style: none;
+    display: flex;
+    gap: 1em;
+}
+
+.navbar-links li a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 1em;
+    transition: color 0.3s ease;
+}
+
+.navbar-links li a:hover {
+    color: var(--color-accent);
+}
+
+/* Hamburger Menu Icon */
+.navbar-icon {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.navbar-icon span {
+    height: 3px;
+    width: 25px;
+    background-color: var(--text-light);
+    margin: 4px 0;
+    transition: 0.4s;
+}
+
+/* Toggle Checkbox */
+.navbar-toggle {
+    display: none;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .navbar-links {
+        position: fixed;
+        left: -100%;
+        top: 60px;
+        flex-direction: column;
+        background-color: var(--color-secondary);
+        width: 100%;
+        text-align: center;
+        transition: left 0.3s ease;
+    }
+
+    .navbar-links li {
+        margin: 1.5em 0;
+    }
+
+    .navbar-icon {
+        display: flex;
+    }
+
+    /* Show menu when checkbox is checked */
+    .navbar-toggle:checked ~ .navbar-links {
+        left: 0;
+    }
+}

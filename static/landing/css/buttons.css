@@ -1,0 +1,34 @@
+/* static/css/buttons.css */
+
+/* CTA Button */
+.btn-cta {
+    padding: 0.75em 1.5em;
+    background-color: var(--color-accent);
+    color: var(--text-light);
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 1em;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.btn-cta:hover {
+    background-color: #e65c54; /* Slightly darker shade of coral */
+    transform: translateY(-2px);
+}
+
+/* Custom Button */
+.custom-button {
+    padding: 0.75em 1.5em;
+    background-color: var(--color-secondary);
+    color: var(--text-light);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.custom-button:hover {
+    background-color: #026aa7; /* Darker shade */
+    transform: translateY(-2px);
+}

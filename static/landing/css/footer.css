@@ -1,0 +1,16 @@
+/* static/css/footer.css */
+
+.footer {
+    background-color: var(--color-secondary);
+    color: var(--text-light);
+    padding: 1em 0;
+    text-align: center;
+}
+
+.footer a {
+    color: var(--color-accent);
+}
+
+.footer a:hover {
+    color: #e65c54;
+}

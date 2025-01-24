@@ -1,13 +1,47 @@
-<!-- Tempest/templates/base.html -->
+<!-- Scheduales_Generator/templates/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Schedules Generator{% endblock %}</title>
     {% load static %}
+
+    <!-- Link to CSS Variables First -->
+    <link rel="stylesheet" href="{% static 'landing/css/variables.css' %}">
+
+    <!-- Base Styles -->
+    <link rel="stylesheet" href="{% static 'landing/css/base.css' %}">
+
+    <!-- Layout Styles -->
+    <link rel="stylesheet" href="{% static 'landing/css/layout.css' %}">
+
+    <!-- Navbar Styles -->
+    <link rel="stylesheet" href="{% static 'landing/css/navbar.css' %}">
+
+    <!-- Forms Styles -->
+    <link rel="stylesheet" href="{% static 'landing/css/forms.css' %}">
+
+    <!-- Buttons Styles -->
+    <link rel="stylesheet" href="{% static 'landing/css/buttons.css' %}">
+
+    <!-- Cards Styles -->
+    <link rel="stylesheet" href="{% static 'landing/css/cards.css' %}">
+
+    <!-- Responsive Styles -->
+    <link rel="stylesheet" href="{% static 'landing/css/responsive.css' %}">
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{% static 'landing/css/custom.css' %}">
+
+    <!-- Landing Page Specific Styles -->
     <link rel="stylesheet" href="{% static 'landing/css/landing.css' %}">
+
+    <link rel="stylesheet" href="{% static 'landing/css/footer.css' %}">
+
+
     <!-- Include additional CSS files if needed -->
     {% block extra_css %}{% endblock %}
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
@@ -38,11 +72,20 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="content">
+    <div class="content container">
         {% block content %}{% endblock %}
     </div>
 
-    <!-- Include JavaScript files if needed -->
+    <!-- Footer (Optional) -->
+    <div class="footer">
+        <p>&copy; 2025 Schedules Generator. All rights reserved.</p>
+        <p><a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+    </div>
+
+    <!-- Include JavaScript files -->
+    <script src="{% static 'landing/js/navbar.js' %}" defer></script>
+    <script src="{% static 'landing/js/custom.js' %}" defer></script>
+    <script src="{% static 'landing/js/footer.js' %}" defer></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -1,0 +1,20 @@
+/* static/css/variables.css */
+
+:root {
+    /* Primary Color */
+    --color-primary: #E0F7FA;
+
+    /* Secondary Color */
+    --color-secondary: #0288D1;
+
+    /* Accent Color */
+    --color-accent: #FF6F61;
+
+    /* Neutral Colors */
+    --color-light-gray: #F5F5F5;
+    --color-dark-gray: #424242;
+
+    /* Text Colors */
+    --text-color: var(--color-dark-gray);
+    --text-light: #FFFFFF;
+}

@@ -1,0 +1,60 @@
+/* static/css/responsive.css */
+
+/* Responsive Adjustments */
+
+/* Small Screens */
+@media (max-width: 768px) {
+    .navbar-links {
+        position: fixed;
+        left: -100%;
+        top: 60px;
+        flex-direction: column;
+        background-color: var(--color-secondary);
+        width: 100%;
+        text-align: center;
+        transition: left 0.3s ease;
+    }
+
+    .navbar-links li {
+        margin: 1.5em 0;
+    }
+
+    .navbar-icon {
+        display: flex;
+    }
+
+    /* Show menu when checkbox is checked */
+    .navbar-toggle:checked ~ .navbar-links {
+        left: 0;
+    }
+
+    /* Card Container */
+    .card-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .card {
+        width: 90%;
+    }
+
+    /* Form Container */
+    .form-container {
+        width: 90%;
+    }
+}
+
+/* Extra Small Screens */
+@media (max-width: 480px) {
+    .navbar-logo a {
+        font-size: 1.2em;
+    }
+
+    .btn-cta,
+    .custom-button,
+    .btn-primary,
+    .btn-secondary {
+        font-size: 0.9em;
+        padding: 0.5em 1em;
+    }
+}
