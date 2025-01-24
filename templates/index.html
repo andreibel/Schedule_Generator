@@ -1,16 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Welcome to My Site</title>
-    <style>
-        body { font-family: Arial, sans-serif; }
-        button { padding: 10px 20px; margin: 5px; }
-    </style>
-</head>
-<body>
-    <h1>Welcome to My Site</h1>
-    <button onclick="location.href='{% url 'accounts:login' %}'">Log In</button>
-    <button onclick="location.href='{% url 'accounts:signup' %}'">Sign Up</button>
-</body>
-</html>
+<!-- Tempest/templates/index.html -->
+{% extends 'base.html' %}
+
+{% block title %}Home - Schedules Generator{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <h1>Create and Manage Your Schedules Effortlessly</h1>
+    <p>Organize your events, set reminders, and stay on top of your day.</p>
+    <a href="{% url 'accounts:signup' %}" class="btn-cta">Get Started</a>
+</div>
+{% endblock %}

@@ -1,31 +1,44 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse
-from django.views.generic import DetailView
-import json
-from .models import Schedule, Event
-from django.views import generic
-from django.core.exceptions import ValidationError
+# Generator/views.py
+
 from django.contrib.auth.mixins import LoginRequiredMixin
-class IndexView(LoginRequiredMixin, generic.ListView):
+from django.views.generic import ListView, CreateView
+from django.urls import reverse_lazy
+from django.shortcuts import redirect, get_object_or_404, render
+from .models import Schedule, Event
+from .forms import ScheduleForm
+from django.http import HttpResponse
+from django.core.exceptions import ValidationError
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+
+class IndexView(LoginRequiredMixin, ListView):
     template_name = 'Generator/index.html'
-    context_object_name = 'last_schedules'
+    context_object_name = 'user_schedules'
     login_url = '/accounts/login/'
 
     def get_queryset(self):
         return Schedule.objects.filter(user=self.request.user)
 
-class Detail_SchedualsView(LoginRequiredMixin, generic.DetailView):
-    template_name = 'Generator/details.html'
-    context_object_name = 'schedule'
-    pk_url_kwarg = 'request_id'
+class CreateScheduleView(LoginRequiredMixin, CreateView):
+    model = Schedule
+    form_class = ScheduleForm
+    template_name = 'Generator/index.html'  # Reuse index.html to display form
+    login_url = '/accounts/login/'
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user  # Associate the schedule with the current user
+        schedule = form.save()
+        messages.success(self.request, f"Schedule '{schedule.name}' created successfully!")
+        return redirect('generator:detail', schedule_id=schedule.id)
+
 @login_required(login_url='/accounts/login/')
-def detail(request,schedule_id):
-    schedule = get_object_or_404(Schedule, pk=schedule_id)
-    return render(request,'Generator/details.html', {'schedule':schedule})
+def detail(request, schedule_id):
+    schedule = get_object_or_404(Schedule, pk=schedule_id, user=request.user)
+    return render(request, 'Generator/details.html', {'schedule': schedule})
+
 @login_required(login_url='/accounts/login/')
 def events(request, schedule_id):
-    schedule = get_object_or_404(Schedule, pk=schedule_id)
+    schedule = get_object_or_404(Schedule, pk=schedule_id, user=request.user)
     if request.method != 'POST':
         return HttpResponse("Please use POST to submit events.")
 
@@ -110,4 +123,5 @@ def events(request, schedule_id):
         except ValidationError as ve:
             return HttpResponse(f"Validation error for event '{name}': {ve.message_dict}")
 
-    return HttpResponse(f"Saved {created_count} new event(s) for schedule '{schedule.name}'.")
+    messages.success(request, f"Saved {created_count} new event(s) for schedule '{schedule.name}'.")
+    return redirect('generator:detail', schedule_id=schedule.id)

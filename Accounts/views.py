@@ -11,4 +11,4 @@ def signup(request):
             return redirect('Generator:index')  # Adjust URL name if needed
     else:
         form = UserCreationForm()
-    return render(request, 'accounts/signup.html', {'form': form})
+    return render(request, 'Accounts/signup.html', {'form': form})

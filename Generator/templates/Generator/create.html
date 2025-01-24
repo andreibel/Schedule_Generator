@@ -1,0 +1,127 @@
+<!-- Generator/templates/Generator/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Generator App Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+        h1 { color: #333; }
+        a {
+            color: #4CAF50;
+            text-decoration: none;
+            padding: 10px 15px;
+            background-color: #e7e7e7;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        a:hover {
+            background-color: #d4d4d4;
+        }
+        .schedule-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .schedule-item {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .schedule-item h2 {
+            margin-top: 0;
+        }
+        /* Styles for the create schedule form */
+        #create-schedule-form {
+            display: none; /* Hidden by default */
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #create-schedule-form input[type="text"] {
+            width: 80%;
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #create-schedule-form input[type="submit"] {
+            padding: 8px 15px;
+            background-color: #5bc0de;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #create-schedule-form input[type="submit"]:hover {
+            background-color: #31b0d5;
+        }
+        #add-schedule-button {
+            padding: 10px 15px;
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        #add-schedule-button:hover {
+            background-color: #4cae4c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome, {{ request.user.username }}!</h1>
+    <p>This is the Generator app's index page.</p>
+    <a href="{% url 'accounts:logout' %}">Log Out</a>
+
+    <h2>Your Schedules</h2>
+    {% if user_schedules.exists %}
+        <ul class="schedule-list">
+            {% for schedule in user_schedules %}
+                <li class="schedule-item">
+                    <h2>{{ schedule.name }}</h2>
+                    <p>Created at: {{ schedule.created_at }}</p>
+                    <!-- Optionally, list events or add links to view/edit the schedule -->
+                    <a href="{% url 'Generator:detail' schedule.id %}">Manage Events</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have no schedules yet.</p>
+    {% endif %}
+
+    <!-- Button to show the create schedule form -->
+    <button id="add-schedule-button">Add New Schedule</button>
+
+    <!-- Create Schedule Form -->
+    <form id="create-schedule-form" action="{% url 'Generator:create_schedule' %}" method="POST">
+        {% csrf_token %}
+        <label for="schedule-name">Schedule Name:</label>
+        <input type="text" id="schedule-name" name="name" placeholder="Enter schedule name" required>
+        <input type="submit" value="Create Schedule">
+    </form>
+
+    <script>
+        const addScheduleButton = document.getElementById('add-schedule-button');
+        const createScheduleForm = document.getElementById('create-schedule-form');
+
+        addScheduleButton.addEventListener('click', () => {
+            if (createScheduleForm.style.display === 'none') {
+                createScheduleForm.style.display = 'block';
+                addScheduleButton.textContent = 'Hide Create Schedule Form';
+            } else {
+                createScheduleForm.style.display = 'none';
+                addScheduleButton.textContent = 'Add New Schedule';
+            }
+        });
+    </script>
+</body>
+</html>

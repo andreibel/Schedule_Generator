@@ -10,11 +10,11 @@
 </head>
 <body>
     <h1>Sign Up</h1>
-    <form method="post" action="{% url 'signup' %}">
+    <form method="post" action="{% url 'accounts:signup' %}">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Sign Up">
     </form>
-    <p>Already have an account? <a href="{% url 'login' %}">Log in here</a>.</p>
+    <p>Already have an account? <a href="{% url 'accounts:login' %}">Log in here</a>.</p>
 </body>
 </html>

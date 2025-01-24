@@ -1,0 +1,48 @@
+<!-- Tempest/templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Schedules Generator{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'landing/css/landing.css' %}">
+    <!-- Include additional CSS files if needed -->
+    {% block extra_css %}{% endblock %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-logo">
+            <a href="{% url 'landing' %}">Schedules Generator</a>
+        </div>
+        <input type="checkbox" id="navbar-toggle" class="navbar-toggle" aria-label="Toggle navigation">
+        <label for="navbar-toggle" class="navbar-icon" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+        </label>
+        <ul class="navbar-links">
+            <li><a href="{% url 'landing' %}">Home</a></li>
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'generator:index' %}">Generation</a></li>
+                {% if user.is_staff %}
+                    <li><a href="/admin/">Admin Panel</a></li>
+                {% endif %}
+                <li><a href="{% url 'accounts:logout' %}">Logout</a></li>
+            {% else %}
+                <li><a href="{% url 'accounts:login' %}">Login</a></li>
+                <li><a href="{% url 'accounts:signup' %}">Signup</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Include JavaScript files if needed -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

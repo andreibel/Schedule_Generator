@@ -1,0 +1,31 @@
+<!-- Tempest/templates/Generator/index.html -->
+{% extends 'base.html' %}
+
+{% block title %}Generation - Schedules Generator{% endblock %}
+{% block content %}
+<h2>Your Schedules</h2>
+{% if user_schedules.exists %}
+    <div class="card-container">
+        {% for schedule in user_schedules %}
+            <div class="card">
+                <h3>{{ schedule.name }}</h3>
+                <p>Created on: {{ schedule.created_at|date:"F d, Y" }}</p>
+                <a href="{% url 'generator:detail' schedule.id %}" class="btn-secondary">Manage Events</a>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>You have no schedules yet.</p>
+{% endif %}
+
+<!-- Button to show the create schedule form -->
+<button id="add-schedule-button">Add New Schedule</button>
+
+<!-- Create Schedule Form -->
+<form id="create-schedule-form" action="{% url 'generator:create_schedule' %}" method="POST">
+    {% csrf_token %}
+    <label for="schedule-name">Schedule Name:</label>
+    <input type="text" id="schedule-name" name="name" placeholder="Enter schedule name" required>
+    <input type="submit" value="Create Schedule" class="btn-primary">
+</form>
+{% endblock %}

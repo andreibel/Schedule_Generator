@@ -1,8 +1,9 @@
+<!-- Generator/templates/Generator/details.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>{{ schedule.name }} - Multiple Events</title>
+  <title>{{ schedule.name }} - Events</title>
   <style>
     .event-block {
       border: 1px solid #ccc;
@@ -10,6 +11,8 @@
       padding: 1em;
       max-width: 300px;
       position: relative;
+      background-color: #fff;
+      border-radius: 5px;
     }
     .time-slot-row, .time-slot-group {
       margin-left: 1em;
@@ -18,6 +21,9 @@
     .time-slot-group {
       border: 1px dashed #aaa;
       padding: 0.5em;
+      margin-bottom: 0.5em;
+      border-radius: 4px;
+      background-color: #f9f9f9;
     }
     #events-container {
       display: flex;
@@ -36,21 +42,90 @@
       cursor: pointer;
       padding: 2px 5px;
       font-size: 0.8em;
+      border-radius: 3px;
+    }
+    /* Additional styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f2f2f2;
+    }
+    h1, h2 {
+      color: #333;
+    }
+    a {
+      color: #4CAF50;
+      text-decoration: none;
+      padding: 5px 10px;
+      background-color: #e7e7e7;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+    a:hover {
+      background-color: #d4d4d4;
+    }
+    /* Messages styling */
+    .messages {
+        list-style-type: none;
+        padding: 0;
+        margin-bottom: 20px;
+    }
+    .messages li {
+        padding: 10px;
+        margin-bottom: 5px;
+        border-radius: 4px;
+    }
+    .messages li.success {
+        background-color: #dff0d8;
+        color: #3c763d;
+    }
+    .messages li.error {
+        background-color: #f2dede;
+        color: #a94442;
     }
   </style>
 </head>
 <body>
   <h1>Schedule: {{ schedule.name }}</h1>
+  <a href="{% url 'generator:index' %}">Back to Schedules</a>
+
+  <!-- Display messages -->
+  {% if messages %}
+      <ul class="messages">
+          {% for message in messages %}
+              <li class="{{ message.tags }}">{{ message }}</li>
+          {% endfor %}
+      </ul>
+  {% endif %}
 
   <!-- Display existing events (if any) -->
-  {% for event in schedule.event_set.all %}
+  <h2>Existing Events</h2>
+  {% if schedule.events.all %}
     <ul>
-      <li>{{ event }}:<br/> {{ event.time_slots }}</li>
+      {% for event in schedule.events.all %}
+        <li>
+          <strong>{{ event.name }}</strong>:
+          {% if event.time_slots %}
+            {% for slot in event.time_slots %}
+              {% if slot|length == 2 %}
+                <span>{{ slot.0 }}</span> and <span>{{ slot.1 }}</span><br/>
+              {% else %}
+                <span>{{ slot }}</span><br/>
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            <span>No time slots assigned.</span>
+          {% endif %}
+        </li>
+      {% endfor %}
     </ul>
-  {% endfor %}
+  {% else %}
+    <p>No events added yet.</p>
+  {% endif %}
 
   <!-- Form to add new events -->
-  <form action="{% url 'Generator:events' schedule.id %}" method="POST">
+  <h2>Add New Events</h2>
+  <form action="{% url 'generator:events' schedule.id %}" method="POST">
     {% csrf_token %}
     <!-- Container for event blocks inserted via JavaScript -->
     <div id="events-container"></div>
@@ -77,7 +152,7 @@
         <button type="button" class="remove-event-btn">X</button>
         <h2>New Event #${currentEventIndex + 1}</h2>
         <label>Event Name:</label>
-        <input type="text" name="event_${currentEventIndex}_name" placeholder="e.g. My Event"><br><br>
+        <input type="text" name="event_${currentEventIndex}_name" placeholder="e.g. My Event" required><br><br>
         <label>Time Slot Mode:</label>
         <label>
           <input type="radio" name="event_${currentEventIndex}_mode" value="single" checked> Single
@@ -121,7 +196,8 @@
             <div class="time-slot-group">
               <div class="time-slot-row">
                 <label>Part 1 - Day:</label>
-                <select name="event_${currentEventIndex}_slot_${timeSlotIndex}_first_day">
+                <select name="event_${currentEventIndex}_slot_${timeSlotIndex}_first_day" required>
+                  <option value="">Select Day</option>
                   <option value="Sun">Sun</option>
                   <option value="Mon">Mon</option>
                   <option value="Tue">Tue</option>
@@ -131,13 +207,14 @@
                   <option value="Sat">Sat</option>
                 </select>
                 <label>From:</label>
-                <input type="time" name="event_${currentEventIndex}_slot_${timeSlotIndex}_first_start">
+                <input type="time" name="event_${currentEventIndex}_slot_${timeSlotIndex}_first_start" required>
                 <label>To:</label>
-                <input type="time" name="event_${currentEventIndex}_slot_${timeSlotIndex}_first_end">
+                <input type="time" name="event_${currentEventIndex}_slot_${timeSlotIndex}_first_end" required>
               </div>
               <div class="time-slot-row">
                 <label>Part 2 - Day:</label>
-                <select name="event_${currentEventIndex}_slot_${timeSlotIndex}_second_day">
+                <select name="event_${currentEventIndex}_slot_${timeSlotIndex}_second_day" required>
+                  <option value="">Select Day</option>
                   <option value="Sun">Sun</option>
                   <option value="Mon">Mon</option>
                   <option value="Tue">Tue</option>
@@ -147,9 +224,9 @@
                   <option value="Sat">Sat</option>
                 </select>
                 <label>From:</label>
-                <input type="time" name="event_${currentEventIndex}_slot_${timeSlotIndex}_second_start">
+                <input type="time" name="event_${currentEventIndex}_slot_${timeSlotIndex}_second_start" required>
                 <label>To:</label>
-                <input type="time" name="event_${currentEventIndex}_slot_${timeSlotIndex}_second_end">
+                <input type="time" name="event_${currentEventIndex}_slot_${timeSlotIndex}_second_end" required>
               </div>
             </div>
           `;
@@ -158,7 +235,8 @@
           groupHTML = `
             <div class="time-slot-row">
               <label>Day:</label>
-              <select name="event_${currentEventIndex}_slot_${timeSlotIndex}_day">
+              <select name="event_${currentEventIndex}_slot_${timeSlotIndex}_day" required>
+                <option value="">Select Day</option>
                 <option value="Sun">Sun</option>
                 <option value="Mon">Mon</option>
                 <option value="Tue">Tue</option>
@@ -168,9 +246,9 @@
                 <option value="Sat">Sat</option>
               </select>
               <label>From:</label>
-              <input type="time" name="event_${currentEventIndex}_slot_${timeSlotIndex}_start">
+              <input type="time" name="event_${currentEventIndex}_slot_${timeSlotIndex}_start" required>
               <label>To:</label>
-              <input type="time" name="event_${currentEventIndex}_slot_${timeSlotIndex}_end">
+              <input type="time" name="event_${currentEventIndex}_slot_${timeSlotIndex}_end" required>
             </div>
           `;
         }

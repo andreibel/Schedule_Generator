@@ -24,6 +24,11 @@
     <option name="TEMPLATE_FOLDERS">
       <list>
         <option value="$MODULE_DIR$/templates" />
+        <option value="$MODULE_DIR$/Generator/templates" />
+        <option value="$MODULE_DIR$/Accounts/templates" />
+        <option value="$MODULE_DIR$/Generator/static" />
+        <option value="$MODULE_DIR$/static" />
+        <option value="$MODULE_DIR$/Accounts/static" />
       </list>
     </option>
   </component>
