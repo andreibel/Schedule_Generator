@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load time_extras %}   <!-- for minutes_to_hhmm if needed -->
+
+{% block content %}
+<h1>Possible Schedules for {{ schedule.name }}</h1>
+<p>Blocked Days: {{ blocked_days }} | Max Days: {{ max_days }}</p>
+
+{% if possible_schedules %}
+  <p>Found {{ possible_schedules|length }} schedule(s).</p>
+  {% for combo in possible_schedules %}
+    <h3>Option {{ forloop.counter }}</h3>
+    <ul>
+      {% for ev_name, day, start, end in combo %}
+        <li>
+          <strong>{{ ev_name }}</strong>:
+          {{ day }}
+          {{ start|minutes_to_hhmm }} - {{ end|minutes_to_hhmm }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endfor %}
+{% else %}
+  <p>No valid schedules found.</p>
+{% endif %}
+{% endblock %}

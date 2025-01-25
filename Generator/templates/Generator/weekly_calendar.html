@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load time_extras %}  <!-- so we can use dictkey and maybe minutes_to_hhmm -->
+
+{% block content %}
+<h1>Weekly Calendar: {{ schedule.name }}</h1>
+
+<p>
+  We found {{ num_schedules }} valid schedule(s).
+  Showing the <strong>first</strong> one as a weekly table.
+</p>
+
+<table border="1" cellpadding="4">
+  <thead>
+    <tr>
+      <th>Time</th>
+      {% for d in grid_data.days %}
+        <th>{{ d }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for block_minute, label in grid_data.time_blocks %}
+    <tr>
+      <!-- Leftmost column: the time label -->
+      <td>{{ label }}</td>
+
+      <!-- Then one cell per day -->
+      {% for day in grid_data.days %}
+        {% comment %}
+        Our grid keys are "Day-BlockMinute", e.g. "Mon-480".
+        We stored event names in grid_data.grid["Mon-480"] = [...]
+        {% endcomment %}
+        {% with key=day|add:'-'|add:block_minute %}
+          {% with event_list=grid_data.grid|dictkey:key %}
+            <td>
+              {% if event_list %}
+                <ul>
+                  {% for ev_name in event_list %}
+                    <li>{{ ev_name }}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </td>
+          {% endwith %}
+        {% endwith %}
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

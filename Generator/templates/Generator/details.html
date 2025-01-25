@@ -22,12 +22,20 @@
     {% endif %}
 
     <!-- Display existing events (if any) -->
+{#    <h1>Schedule: {{ schedule.name }}</h1>#}
+{##}
+{#  <!-- Display existing events (if any) -->#}
+{#  {% for event in schedule.event_set.all %}#}
+{#    <ul>#}
+{#      <li>{{ event }}:<br/> {{ event.time_slots }}</li>#}
+{#    </ul>#}
+{#  {% endfor %}#}
     <h2>Existing Events</h2>
-    {% if schedule.events.all %}
-        <ul>
-            {% for event in schedule.events.all %}
-                <li>
-                    <strong>{{ event.name }}</strong>:
+    {% if schedule.event_set.all %}
+        <div class="card-container">
+            {% for event in schedule.event_set.all %}
+                <div class="card">
+                    <strong>{{ event.name }}</strong>
                     {% if event.time_slots %}
                         {% for slot in event.time_slots %}
                             {% if slot|length == 2 %}
@@ -39,9 +47,10 @@
                     {% else %}
                         <span>No time slots assigned.</span>
                     {% endif %}
-                </li>
+                </div>
             {% endfor %}
-        </ul>
+                   <a href="{% url 'generator:generate_combinations' schedule.id%}" class="btn-secondary" >Generate</a>
+        </div>
     {% else %}
         <p>No events added yet.</p>
     {% endif %}

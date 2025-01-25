@@ -10,6 +10,7 @@ from django.http import HttpResponse
 from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from .utils.generator import generate_possible_schedules, build_week_grid
 
 class IndexView(LoginRequiredMixin, ListView):
     template_name = 'Generator/index.html'
@@ -125,3 +126,66 @@ def events(request, schedule_id):
 
     messages.success(request, f"Saved {created_count} new event(s) for schedule '{schedule.name}'.")
     return redirect('generator:detail', schedule_id=schedule.id)
+
+
+@login_required
+def generate_combinations_view(request, schedule_id):
+    """
+    Shows all possible schedules for a given schedule's events.
+    """
+    schedule = get_object_or_404(Schedule, pk=schedule_id, user=request.user)
+    events = schedule.event_set.all()
+
+    # Optional: read GET params, e.g. ?blocked_days=Fri,Sun&max_days=3
+    blocked_days_param = request.GET.get('blocked_days', '')
+    if blocked_days_param:
+        blocked_days = set(d.strip() for d in blocked_days_param.split(','))
+    else:
+        blocked_days = None
+
+    max_days_param = request.GET.get('max_days')
+    if max_days_param and max_days_param.isdigit():
+        max_days = int(max_days_param)
+    else:
+        max_days = None
+
+    possible_schedules = generate_possible_schedules(
+        events,
+        blocked_days=blocked_days,
+        max_days=max_days
+    )
+
+    context = {
+        'schedule': schedule,
+        'possible_schedules': possible_schedules,
+        'blocked_days': blocked_days,
+        'max_days': max_days,
+    }
+    return render(request, 'Generator/possible_schedules.html', context)
+
+
+@login_required
+def weekly_calendar_view(request, schedule_id):
+    """
+    Shows one schedule (the first valid schedule) in a weekly calendar format.
+    """
+    schedule = get_object_or_404(Schedule, pk=schedule_id, user=request.user)
+    events = schedule.event_set.all()
+
+    # Generate all valid combos
+    all_schedules = generate_possible_schedules(events)
+    if not all_schedules:
+        # No valid combos
+        return render(request, 'Generator/no_schedules.html', {"schedule": schedule})
+
+    # Just pick the first valid schedule
+    first_sched = all_schedules[0]  # list of (ev_name, day, start, end)
+    grid_data = build_week_grid(first_sched, start_hour=8, end_hour=18, interval=30)
+
+    context = {
+        "schedule": schedule,
+        "this_schedule": first_sched,
+        "grid_data": grid_data,
+        "num_schedules": len(all_schedules),
+    }
+    return render(request, 'Generator/weekly_calendar.html', context)
