@@ -21,15 +21,6 @@
         </ul>
     {% endif %}
 
-    <!-- Display existing events (if any) -->
-{#    <h1>Schedule: {{ schedule.name }}</h1>#}
-{##}
-{#  <!-- Display existing events (if any) -->#}
-{#  {% for event in schedule.event_set.all %}#}
-{#    <ul>#}
-{#      <li>{{ event }}:<br/> {{ event.time_slots }}</li>#}
-{#    </ul>#}
-{#  {% endfor %}#}
     <h2>Existing Events</h2>
     {% if schedule.event_set.all %}
         <div class="card-container">

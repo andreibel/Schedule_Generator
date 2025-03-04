@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Build the event block HTML.
         eventDiv.innerHTML = `
             <button type="button" class="remove-event-btn">X</button>
-            <h2>New Event #${currentEventIndex + 1}</h2>
+            <h2>New Event</h2>
             <label>Event Name:</label>
             <input type="text" name="event_${currentEventIndex}_name" placeholder="e.g. My Event" required><br><br>
             <label>Time Slot Mode:</label>

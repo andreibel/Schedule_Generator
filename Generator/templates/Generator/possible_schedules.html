@@ -3,24 +3,345 @@
 {% load time_extras %}   <!-- for minutes_to_hhmm if needed -->
 
 {% block content %}
-<h1>Possible Schedules for {{ schedule.name }}</h1>
-<p>Blocked Days: {{ blocked_days }} | Max Days: {{ max_days }}</p>
 
-{% if possible_schedules %}
-  <p>Found {{ possible_schedules|length }} schedule(s).</p>
-  {% for combo in possible_schedules %}
-    <h3>Option {{ forloop.counter }}</h3>
-    <ul>
-      {% for ev_name, day, start, end in combo %}
-        <li>
-          <strong>{{ ev_name }}</strong>:
-          {{ day }}
-          {{ start|minutes_to_hhmm }} - {{ end|minutes_to_hhmm }}
-        </li>
-      {% endfor %}
-    </ul>
-  {% endfor %}
-{% else %}
-  <p>No valid schedules found.</p>
-{% endif %}
+
+  <style>
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .headerrr {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .btn {
+      background-color: #4285F4;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background-color: #3367D6;
+    }
+    .title {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .schedule-grid {
+      display: flex;
+      overflow-x: auto;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    }
+    .time-column {
+      width: 80px;
+      flex-shrink: 0;
+    }
+    .day-column {
+      width: 160px;
+      min-width: 160px;
+      position: relative;
+    }
+    .corner-cell {
+      height: 50px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .day-header {
+      height: 50px;
+      border: 1px solid #e0e0e0;
+      background-color: #f5f5f5;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .time-cell {
+      height: 30px;
+      padding-right: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      font-size: 0.8rem;
+      color: #555;
+    }
+    .grid-cell {
+      height: 30px;
+      border-bottom: 1px solid #f0f0f0;
+      border-right: 1px solid #f0f0f0;
+    }
+    .course-card {
+      position: absolute;
+      width: calc(100% - 8px);
+      left: 4px;
+      border-radius: 4px;
+      padding: 4px;
+      font-size: 0.7rem;
+      overflow: hidden;
+      color: white;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      z-index: 10;
+    }
+    .course-title {
+      font-weight: bold;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .course-type {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .course-time {
+      font-size: 0.65rem;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 16px;
+      padding: 8px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+    }
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      margin-right: 4px;
+      border-radius: 4px;
+    }
+  </style>
+    <br><br><br><br>
+<div class="container">
+    <div class="headerrr">
+      <button id="prevBtn" class="btn">Previous</button>
+      <div id="scheduleTitle" class="title">Schedule Option 1</div>
+      <button id="nextBtn" class="btn">Next</button>
+    </div>
+
+    <div id="scheduleGrid" class="schedule-grid">
+      <!-- Will be populated with JavaScript -->
+    </div>
+
+    <!-- Course legend -->
+    <div class="legend">
+      <div style="font-weight: bold; margin-right: 8px;">Courses:</div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #4285F4;"></div>
+        <span>תכנות מונחה עצמים (Object-Oriented Programming)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #EA4335;"></div>
+        <span>מערכות הפעלה (Operating Systems)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #FBBC05;"></div>
+        <span>אלגוריתמים (Algorithms)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #34A853;"></div>
+        <span>מסד נתונים (Databases)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #8E24AA;"></div>
+        <span>ניהול פרוייקט (Project Management)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #FB8C00;"></div>
+        <span>אנגלית ישומית (Applied English)</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Define the schedule data for all options
+    const scheduleData = {{ data | safe }};
+
+    // Course colors
+    const courseColors = {
+      'תכנות מונחה עצמים': '#4285F4', // Object-Oriented Programming - Blue
+      'מערכות הפעלה': '#EA4335',      // Operating Systems - Red
+      'אלגוריתמים': '#FBBC05',         // Algorithms - Yellow
+      'מסד נתונים': '#34A853',          // Databases - Green
+      'ניהול פרוייקט': '#8E24AA',       // Project Management - Purple
+      'אנגלית ישומית': '#FB8C00',       // Applied English - Orange
+    };
+
+    // Days of the week
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    // Time range
+    const startTime = 8 * 60; // 8:00 AM in minutes
+    const endTime = 19 * 60;  // 7:00 PM in minutes
+    const timeSlotInterval = 30; // 30-minute intervals
+
+    // Current schedule index
+    let currentScheduleIndex = 0;
+
+    // DOM elements
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const scheduleTitle = document.getElementById('scheduleTitle');
+    const scheduleGrid = document.getElementById('scheduleGrid');
+
+    // Function to convert time string to minutes (e.g., "10:30" to 630)
+    function timeToMinutes(timeStr) {
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      return hours * 60 + minutes;
+    }
+
+    // Function to get base course name (without type)
+    function getBaseCourse(fullName) {
+      // Extract the base course name before the hyphen
+      const parts = fullName.split(' - ');
+      return parts[0];
+    }
+
+    // Function to get course type
+    function getCourseType(fullName) {
+      const parts = fullName.split(' - ');
+      if (parts.length > 1) {
+        return parts[1];
+      }
+      return '';
+    }
+
+    // Function to generate time slots
+    function generateTimeSlots() {
+      const slots = [];
+      for (let time = startTime; time <= endTime; time += timeSlotInterval) {
+        const hours = Math.floor(time / 60);
+        const minutes = time % 60;
+        slots.push({
+          minutes: time,
+          label: `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+        });
+      }
+      return slots;
+    }
+
+    // Function to render a schedule
+    function renderSchedule(scheduleIndex) {
+      // Clear existing content
+      scheduleGrid.innerHTML = '';
+
+      // Generate time slots
+      const timeSlots = generateTimeSlots();
+
+      // Update the title
+      scheduleTitle.textContent = `Schedule Option ${scheduleIndex + 1}`;
+
+      // Create time column
+      const timeColumn = document.createElement('div');
+      timeColumn.className = 'time-column';
+
+      // Add empty corner cell
+      const cornerCell = document.createElement('div');
+      cornerCell.className = 'corner-cell';
+      timeColumn.appendChild(cornerCell);
+
+      // Add time slots
+      timeSlots.forEach(slot => {
+        const timeCell = document.createElement('div');
+        timeCell.className = 'time-cell';
+        timeCell.textContent = slot.label;
+        timeColumn.appendChild(timeCell);
+      });
+
+      scheduleGrid.appendChild(timeColumn);
+
+      // Create day columns
+      days.forEach(day => {
+        const dayColumn = document.createElement('div');
+        dayColumn.className = 'day-column';
+
+        // Add day header
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'day-header';
+        dayHeader.textContent = day;
+        dayColumn.appendChild(dayHeader);
+
+        // Create grid container
+        const gridContainer = document.createElement('div');
+        gridContainer.style.position = 'relative';
+
+        // Add time grid cells
+        timeSlots.forEach(() => {
+          const gridCell = document.createElement('div');
+          gridCell.className = 'grid-cell';
+          gridContainer.appendChild(gridCell);
+        });
+
+        // Add courses for this day
+        const dayCourses = scheduleData[scheduleIndex].filter(course => course.day === day);
+        dayCourses.forEach(course => {
+          const startMinutes = timeToMinutes(course.start);
+          const endMinutes = timeToMinutes(course.end);
+
+          // Calculate position and height
+          const top = ((startMinutes - startTime) / timeSlotInterval) * 30;
+          const height = ((endMinutes - startMinutes) / timeSlotInterval) * 30;
+
+          // Get base course name for color
+          const baseCourse = getBaseCourse(course.name);
+          const courseType = getCourseType(course.name);
+
+          // Create course card
+          const courseCard = document.createElement('div');
+          courseCard.className = 'course-card';
+          courseCard.style.top = `${top}px`;
+          courseCard.style.height = `${height}px`;
+          courseCard.style.backgroundColor = courseColors[baseCourse] || '#999';
+
+          // Add course content
+          const courseTitle = document.createElement('div');
+          courseTitle.className = 'course-title';
+          courseTitle.textContent = baseCourse;
+          courseCard.appendChild(courseTitle);
+
+          const courseTypeEl = document.createElement('div');
+          courseTypeEl.className = 'course-type';
+          courseTypeEl.textContent = courseType;
+          courseCard.appendChild(courseTypeEl);
+
+          const courseTime = document.createElement('div');
+          courseTime.className = 'course-time';
+          courseTime.textContent = `${course.start} - ${course.end}`;
+          courseCard.appendChild(courseTime);
+
+          gridContainer.appendChild(courseCard);
+        });
+
+        dayColumn.appendChild(gridContainer);
+        scheduleGrid.appendChild(dayColumn);
+      });
+    }
+
+    // Event listeners for navigation
+    prevBtn.addEventListener('click', () => {
+      currentScheduleIndex = (currentScheduleIndex - 1 + scheduleData.length) % scheduleData.length;
+      renderSchedule(currentScheduleIndex);
+    });
+
+    nextBtn.addEventListener('click', () => {
+      currentScheduleIndex = (currentScheduleIndex + 1) % scheduleData.length;
+      renderSchedule(currentScheduleIndex);
+    });
+
+    // Initial render
+    renderSchedule(currentScheduleIndex);
+  </script>
+
+
+
+    <br><br><br><br><br><br>
 {% endblock %}

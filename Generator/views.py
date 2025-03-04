@@ -2,7 +2,6 @@
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, CreateView
-from django.urls import reverse_lazy
 from django.shortcuts import redirect, get_object_or_404, render
 from .models import Schedule, Event
 from .forms import ScheduleForm
@@ -11,6 +10,8 @@ from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .utils.generator import generate_possible_schedules, build_week_grid
+from .templatetags import time_extras
+import json
 
 class IndexView(LoginRequiredMixin, ListView):
     template_name = 'Generator/index.html'
@@ -53,9 +54,7 @@ def events(request, schedule_id):
             continue
         event_index = parts[1]
         field = parts[2]
-        if event_index not in event_data:
-            # Initialize with default values.
-            event_data[event_index] = {"name": "", "mode": "single", "slots": {}}
+        event_data[event_index] = {"name": "", "mode": "single", "slots": {}} if event_index not in event_data else event_data[event_index]
         if field == "name":
             event_data[event_index]["name"] = value.strip()
         elif field == "mode":
@@ -136,7 +135,7 @@ def generate_combinations_view(request, schedule_id):
     schedule = get_object_or_404(Schedule, pk=schedule_id, user=request.user)
     events = schedule.event_set.all()
 
-    # Optional: read GET params, e.g. ?blocked_days=Fri,Sun&max_days=3
+    # Optional: read GET params, e.g. ?blocked_days=Thu&max_days=4
     blocked_days_param = request.GET.get('blocked_days', '')
     if blocked_days_param:
         blocked_days = set(d.strip() for d in blocked_days_param.split(','))
@@ -155,13 +154,86 @@ def generate_combinations_view(request, schedule_id):
         max_days=max_days
     )
 
+
     context = {
         'schedule': schedule,
         'possible_schedules': possible_schedules,
         'blocked_days': blocked_days,
         'max_days': max_days,
     }
-    return render(request, 'Generator/possible_schedules.html', context)
+
+    st = ""
+    for i in range(len(possible_schedules)):
+        st+= f"Option {i+1}\n"
+        for j in range(len(possible_schedules[i])):
+            st += f"{possible_schedules[i][j][0]}: {possible_schedules[i][j][1]} {time_extras.minutes_to_hhmm(possible_schedules[i][j][2])} - {time_extras.minutes_to_hhmm(possible_schedules[i][j][3])}\n"
+
+    lines = st.strip().splitlines()
+    parsed_data = []
+
+    current_option_number = None
+    current_courses = []
+
+    for line in lines:
+        line = line.strip()
+        if not line:
+            # Skip blank lines
+            continue
+
+        # Check if this line begins a new Option
+        if line.startswith("Option"):
+            # If we were already collecting courses for a previous option,
+            # save them before starting a new one.
+            if current_option_number is not None:
+                parsed_data.append({
+                    "option_number": current_option_number,
+                    "courses": current_courses
+                })
+
+            # Extract the option number after the word "Option"
+            # Example: "Option 11" => we take "11"
+            parts = line.split()
+            current_option_number = parts[1]  # "11" in that example
+            current_courses = []  # Reset course list for new option
+        else:
+            # It's a course line of the format:
+            # "course_name: Day start - end"
+            # Example: "תכנות מונחה עצמים - הרצאה: Thu 10:30 - 13:50"
+            if ':' not in line:
+                continue  # skip malformed lines
+
+            course_part, times_part = line.split(':', 1)
+            course_part = course_part.strip()  # e.g. "תכנות מונחה עצמים - הרצאה"
+            times_part = times_part.strip()  # e.g. "Thu 10:30 - 13:50"
+
+            # times_part typically: "Thu 10:30 - 13:50"
+            # We'll split by spaces
+            tokens = times_part.split()
+            # tokens[0] = "Thu"
+            # tokens[1] = "10:30"
+            # tokens[2] = "-"
+            # tokens[3] = "13:50"
+            if len(tokens) >= 4:
+                day = tokens[0]
+                start = tokens[1]
+                end = tokens[3]
+
+                current_courses.append({"name": course_part, "day": day, "start": start, "end": end})
+
+    # Don't forget to add the last option's data at the end of the file
+    if current_option_number is not None and current_courses:
+        parsed_data.append({
+            "option_number": current_option_number,
+            "courses": current_courses
+        })
+
+    new_list = []
+    for i in parsed_data:
+        new_list.append(i.get("courses"))
+    context = json.dumps(new_list, ensure_ascii=False, indent=2)
+
+    l = {"data": context}
+    return render(request, 'Generator/possible_schedules.html', l)
 
 
 @login_required
